@@ -1,27 +1,36 @@
 package hello;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.JOptionPane;
-
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.social.oauth2.OAuth2Operations;
 import org.springframework.social.oauth2.OAuth2Template;
 import org.springframework.web.client.RestTemplate;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class Application {
 
     public static void main(String[] args) {
         String appId = promptForInput("Enter your Consumer ID:");
         String appSecret = promptForInput("Enter your Consumer Secret:");
+        String message = promptForInput("Enter your status:");
         String appToken = fetchApplicationAccessToken(appId, appSecret);
         List<Tweet> tweets = searchTwitter("#springframework", appToken);
         for (Tweet tweet : tweets) {
             System.out.println(tweet.getText());
+        }
+        try {
+            sendTweet(message);
+        } catch (TwitterException e) {
+            e.printStackTrace();
         }
     }
 
@@ -40,6 +49,15 @@ public class Application {
             tweets.add(new Tweet(Long.valueOf(status.get("id").toString()), status.get("text").toString()));
         }
         return tweets;
+    }
+
+    private static void sendTweet (String message) throws TwitterException {
+        // http://www.codingpedia.org/ama/how-to-post-to-twittter-from-java-with-twitter4j-in-10-minutes/
+        Twitter twitter = TwitterFactory.getSingleton();
+        Status status = twitter.updateStatus(message);
+        System.out.println("Successfully updated status to " + status.getText());
+
+
     }
 
     private static String fetchApplicationAccessToken(String appId, String appSecret) {
